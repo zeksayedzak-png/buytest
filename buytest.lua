@@ -1,427 +1,334 @@
--- 🎯 PRECISION INJECTOR v3.0
--- يستهدف مسار محدد: ReplicatedStorage.Modules.TradeTokens.TokenShopUIController.TokenProducts
--- ⚠️ للبيئات الآمنة فقط
+-- 🎯 PHOENIX SMART PURCHASE v2.0
+-- نسخة موجهة لشراء منتج محدد بالاسم
+-- loadstring(game:HttpGet(""))()
 
+-- 🎮 انتظر اللعبة
+repeat task.wait() until game:IsLoaded()
 local plr = game.Players.LocalPlayer
-local TARGET_VALUE = 999999
-local injectionLog = {}
 
--- 🗺️ المسار المحدد
-local TARGET_PATH = "ReplicatedStorage.Modules.TradeTokens.TokenShopUIController.TokenProducts"
-
--- 🔧 إعدادات التخفي
-local StealthConfig = {
-    MODE = "ULTRA_SLOW",  -- ULTRA_SLOW, SLOW, NORMAL
-    FAKE_ACTIVITY = true,
-    RANDOM_PATHS = true,  -- يمر على مسارات عشوائية أولاً
-    MIMIC_HUMAN = true
+-- 🗃️ قاعدة بيانات المنتجات (تعدلها حسب حاجتك)
+local PRODUCT_DATABASE = {
+    -- [اسم المنتج] = معرف المنتج
+    ["VIP"] = 123456789,
+    ["VIP Pass"] = 123456789,
+    ["VIP Access"] = 123456789,
+    ["Premium"] = 987654321,
+    ["Golden Sword"] = 555555555,
+    ["Rainbow Wings"] = 666666666,
+    ["Speed Boost"] = 777777777,
+    ["Super Jump"] = 888888888,
+    ["Infinite Coins"] = 999999999,
+    ["God Mode"] = 111111111,
+    ["Admin Powers"] = 222222222,
+    ["Legendary Pet"] = 333333333
 }
 
--- 🧭 التنقل الذكي في المسار
-local function navigateToPath(targetPath)
-    print("🧭 [NAVIGATION] البحث عن المسار: " .. targetPath)
+-- 🔥 نواة القوة الذكية
+local Phoenix = {
+    _productName = nil,
+    _productId = nil,
+    _mode = "smart"
+}
+
+-- 🔍 البحث عن المنتج بالاسم
+function Phoenix:findProductByName(productName)
+    print("🔍 Searching for: " .. productName)
     
-    local parts = targetPath:split(".")
-    local current = game
-    
-    -- تنقل بطيء مع تسجيل
-    for i, part in ipairs(parts) do
-        print("   → " .. part)
-        
-        -- استراحة بين المكونات
-        if StealthConfig.MODE == "ULTRA_SLOW" and i > 1 then
-            task.wait(math.random(0.2, 0.8))
-        end
-        
-        if current:FindFirstChild(part) then
-            current = current:FindFirstChild(part)
-        else
-            print("❌ جزء مفقود: " .. part)
-            return nil
+    -- بحث في قاعدة البيانات
+    for name, id in pairs(PRODUCT_DATABASE) do
+        if string.lower(name) == string.lower(productName) then
+            print("✅ Found: " .. name .. " (ID: " .. id .. ")")
+            return id, name
         end
     end
     
-    return current
+    -- بحث تقريبي إذا لم يجد تطابق تام
+    for name, id in pairs(PRODUCT_DATABASE) do
+        if string.find(string.lower(name), string.lower(productName)) then
+            print("✅ Found similar: " .. name .. " (ID: " .. id .. ")")
+            return id, name
+        end
+    end
+    
+    print("❌ Product not found: " .. productName)
+    return nil, nil
 end
 
--- 🔍 البحث الدقيق عن Token/Tokens في المسار
-local function deepScanTokenProducts(folder)
-    print("🔍 [DEEP SCAN] مسح عميق للمجلد...")
+-- 🧠 المحرك الأساسي الذكي
+function Phoenix:igniteSmart(productName)
+    self._productName = productName
     
-    local tokens = {}
-    local scanCount = 0
-    
-    if not folder then
-        print("❌ المجلد غير موجود")
-        return tokens
+    -- البحث عن المنتج
+    local productId, exactName = self:findProductByName(productName)
+    if not productId then
+        return "❌ PRODUCT NOT FOUND: " .. productName
     end
     
-    -- مسح كل المحتويات ببطء
-    for _, child in pairs(folder:GetChildren()) do
-        scanCount = scanCount + 1
-        
-        -- إضافة فترات انتظار للمسح الطويل
-        if scanCount % 5 == 0 and StealthConfig.MODE == "ULTRA_SLOW" then
-            task.wait(math.random(0.1, 0.3))
-        end
-        
-        -- البحث عن أي شيء باسم Token
-        if child.Name:find("Token") then
-            table.insert(tokens, {
-                object = child,
-                name = child.Name,
-                type = child.ClassName,
-                path = child:GetFullName(),
-                original = child.Value,
-                parent = child.Parent.Name
-            })
-            print("   ✅ عثر على: " .. child.Name .. " (" .. child.ClassName .. ")")
-        end
-        
-        -- إذا كان مجلداً، امسح محتوياته أيضاً
-        if child:IsA("Folder") then
-            for _, subChild in pairs(child:GetChildren()) do
-                if subChild.Name:find("Token") then
-                    table.insert(tokens, {
-                        object = subChild,
-                        name = subChild.Name,
-                        type = subChild.ClassName,
-                        path = subChild:GetFullName(),
-                        original = subChild.Value,
-                        parent = child.Name
-                    })
-                    print("   ✅ عثر على: " .. child.Name .. "/" .. subChild.Name)
-                end
+    self._productId = productId
+    self._productName = exactName or productName
+    
+    print("⚡ PHOENIX IGNITED | Product: " .. self._productName .. " | ID: " .. self._productId)
+    
+    -- 🔥 المرحلة 1: الاستهداف الذكي
+    self:_smartTargetPhase()
+    
+    -- 🔥 المرحلة 2: الشراء المتخفي
+    self:_stealthPurchasePhase()
+    
+    return "✅ PURCHASE COMPLETE: " .. self._productName
+end
+
+-- 🎯 المرحلة 1: استهداف ذكي (بدل العشوائية)
+function Phoenix:_smartTargetPhase()
+    print("🎯 SMART TARGET PHASE")
+    
+    -- استهداف RemoteEvents المتعلقة بالشراء فقط
+    local purchaseRemotes = {}
+    
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("RemoteEvent") then
+            local nameLower = string.lower(obj.Name)
+            -- استهداف الأحداث المتعلقة بالشراء فقط
+            if string.find(nameLower, "purchase") or 
+               string.find(nameLower, "buy") or 
+               string.find(nameLower, "shop") or
+               string.find(nameLower, "gamepass") then
+                
+                table.insert(purchaseRemotes, obj)
             end
         end
     end
     
-    return tokens
+    print("🎯 Found " .. #purchaseRemotes .. " purchase-related remotes")
+    
+    -- إرسال طلبات مستهدفة
+    for _, remote in pairs(purchaseRemotes) do
+        task.spawn(function()
+            local payloads = {
+                {productId = self._productId, buy = true},
+                {gamepassId = self._productId, purchase = true},
+                {item = self._productId, action = "buy"},
+                self._productId
+            }
+            
+            for _, payload in pairs(payloads) do
+                pcall(remote.FireServer, remote, payload)
+                task.wait(0.1) -- تباطؤ لتجنب الاكتشاف
+            end
+        end)
+    end
 end
 
--- 🐌 الحقن فائق البطء للمسار المحدد
-local function ultraSlowInjection(tokenObj)
-    print("🐌 [ULTRA SLOW] بدء الحقن الفائق البطء...")
+-- 🐌 المرحلة 2: شراء متخفي
+function Phoenix:_stealthPurchasePhase()
+    print("🐌 STEALTH PURCHASE PHASE")
     
-    local startTime = os.clock()
-    local steps = {}
+    local MarketplaceService = game:GetService("MarketplaceService")
     
-    -- الخطوة 1: محاكاة نشاط عادي (وهمي)
-    if StealthConfig.FAKE_ACTIVITY then
-        print("   🎭 نشاط وهمي...")
-        for i = 1, math.random(2, 4) do
-            local fakeFrame = Instance.new("Frame")
-            fakeFrame.Name = "UI_" .. math.random(100, 999)
-            fakeFrame.Size = UDim2.new(0, 10, 0, 10)
-            fakeFrame.Parent = plr.PlayerGui
-            task.wait(0.15)
-            fakeFrame:Destroy()
-        end
-        table.insert(steps, {action = "fake_activity", time = os.clock() - startTime})
-    end
+    -- 1. انتظار عشوائي (محاكاة تفكير اللاعب)
+    task.wait(math.random(1, 3))
     
-    -- الخطوة 2: انتظار عشوائي طويل
-    local waitTime = math.random(0.5, 2.0)
-    print("   ⏳ انتظار " .. string.format("%.1f", waitTime) .. " ثانية...")
-    task.wait(waitTime)
-    
-    -- الخطوة 3: التعديل الجزئي الأول
-    if tokenObj.type == "NumberValue" then
-        local partialValue = math.floor(TARGET_VALUE * 0.25)
-        print("   📈 تعديل جزئي: " .. tokenObj.original .. " → " .. partialValue)
+    -- 2. فتح نافذة الشراء بطريقة متخفية
+    for attempt = 1, 3 do  -- 3 محاولات كحد أقصى
+        print("   Attempt " .. attempt .. " to purchase: " .. self._productName)
         
-        tokenObj.object.Value = partialValue
-        table.insert(steps, {
-            action = "partial_25%",
-            from = tokenObj.original,
-            to = partialValue,
-            time = os.clock() - startTime
-        })
+        local success, result = pcall(function()
+            -- هنا عملية الشراء الفعلية
+            MarketplaceService:PromptProductPurchase(plr, self._productId)
+            return true
+        end)
         
-        -- انتظار
-        task.wait(math.random(0.8, 1.5))
-        
-        -- الخطوة 4: التعديل الجزئي الثاني
-        partialValue = math.floor(TARGET_VALUE * 0.75)
-        print("   📈 تعديل جزئي: → " .. partialValue)
-        
-        tokenObj.object.Value = partialValue
-        table.insert(steps, {
-            action = "partial_75%",
-            to = partialValue,
-            time = os.clock() - startTime
-        })
-        
-        -- انتظار أطول
-        task.wait(math.random(1.0, 2.0))
-        
-        -- الخطوة 5: القيمة النهائية
-        print("   🎯 القيمة النهائية: → " .. TARGET_VALUE)
-        tokenObj.object.Value = TARGET_VALUE
-        table.insert(steps, {
-            action = "final_value",
-            to = TARGET_VALUE,
-            time = os.clock() - startTime
-        })
-        
-    elseif tokenObj.type == "StringValue" then
-        -- لو كان نصاً
-        if StealthConfig.MIMIC_HUMAN then
-            local current = tokenObj.object.Value
-            -- إضافة تدريجية
-            tokenObj.object.Value = current .. "_mod"
-            task.wait(0.5)
-            tokenObj.object.Value = current .. "_modified"
-            task.wait(0.5)
-            tokenObj.object.Value = "999999"
+        if success then
+            print("   ✅ Purchase window opened for: " .. self._productName)
+            
+            -- انتظار بعد فتح النافذة
+            task.wait(math.random(2, 4))
+            
+            -- إنشاء إشعار نجاح وهمي
+            self:_createSuccessNotification()
+            return true
         else
-            tokenObj.object.Value = "999999"
+            print("   ⚠️ Attempt " .. attempt .. " failed")
+            task.wait(math.random(1, 2)) -- انتظار قبل المحاولة التالية
         end
     end
     
-    local endTime = os.clock()
-    return {
-        success = true,
-        original = tokenObj.original,
-        new = tokenObj.object.Value,
-        steps = #steps,
-        duration = endTime - startTime,
-        log = steps
-    }
+    print("   ❌ All purchase attempts failed")
+    return false
 end
 
--- 🧩 النظام الرئيسي للمسار المحدد
-local function executePrecisionInjection()
-    print([[
+-- 📱 إنشاء إشعار نجاح
+function Phoenix:_createSuccessNotification()
+    local notification = Instance.new("ScreenGui")
+    notification.Name = "PurchaseSuccess"
+    notification.ResetOnSpawn = false
     
-    ╔══════════════════════════════╗
-    ║   🎯 PRECISION INJECTOR     ║
-    ║   TARGET: ]] .. TARGET_PATH .. [[
-    ║   MODE: ]] .. StealthConfig.MODE .. [[
-    ╚══════════════════════════════╝
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0.6, 0, 0.15, 0)
+    frame.Position = UDim2.new(0.2, 0, 0.05, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 60, 30)
+    frame.BackgroundTransparency = 0.2
     
-    🎯 مهمة: تغيير Token/Tokens في مسار محدد
-    🕵️‍♂️ النمط: فائق البطء والدقة
-    ⏱️  الوقت المتوقع: 15-30 ثانية
+    local label = Instance.new("TextLabel")
+    label.Text = "✅ Purchased: " .. self._productName
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.SourceSansBold
     
-    ]])
+    label.Parent = frame
+    frame.Parent = notification
+    notification.Parent = plr.PlayerGui
     
-    -- 1. التنقل إلى المسار
-    local targetFolder = navigateToPath(TARGET_PATH)
+    -- إزالة الإشعار بعد 5 ثواني
+    task.wait(5)
+    notification:Destroy()
+end
+
+-- 📱 واجهة الفينيق الذكية (نسخة موجهة)
+local phoenixUI = Instance.new("ScreenGui")
+phoenixUI.Name = "PhoenixSmart"
+phoenixUI.ResetOnSpawn = false
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0.85, 0, 0.3, 0)
+main.Position = UDim2.new(0.075, 0, 0.1, 0)
+main.BackgroundColor3 = Color3.fromRGB(10, 15, 20)
+main.BackgroundTransparency = 0.1
+
+local title = Instance.new("TextLabel")
+title.Text = "🎯 PHOENIX SMART"
+title.Size = UDim2.new(1, 0, 0.2, 0)
+title.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
+title.TextColor3 = Color3.fromRGB(200, 150, 255)
+title.Font = Enum.Font.SourceSansBold
+
+-- 👤 صورة المنتج (شكل جميل)
+local productImage = Instance.new("ImageLabel")
+productImage.Size = UDim2.new(0.2, 0, 0.6, 0)
+productImage.Position = UDim2.new(0.05, 0, 0.25, 0)
+productImage.BackgroundColor3 = Color3.fromRGB(40, 30, 60)
+productImage.Image = "rbxassetid://1234567890" -- يمكنك تغييرها
+
+-- 📝 حقل إدخال اسم المنتج
+local input = Instance.new("TextBox")
+input.PlaceholderText = "Enter Product Name (e.g., VIP Pass)"
+input.Size = UDim2.new(0.6, 0, 0.25, 0)
+input.Position = UDim2.new(0.3, 0, 0.25, 0)
+input.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
+input.TextColor3 = Color3.new(1, 1, 1)
+input.Font = Enum.Font.SourceSansBold
+input.Text = ""
+
+-- 🔥 زر الشراء
+local button = Instance.new("TextButton")
+button.Text = "🛒 PURCHASE"
+button.Size = UDim2.new(0.6, 0, 0.25, 0)
+button.Position = UDim2.new(0.3, 0, 0.55, 0)
+button.BackgroundColor3 = Color3.fromRGB(60, 30, 80)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Font = Enum.Font.SourceSansBold
+
+-- 📊 حالة النظام
+local status = Instance.new("TextLabel")
+status.Text = "🟢 READY - Enter product name"
+status.Size = UDim2.new(1, 0, 0.2, 0)
+status.Position = UDim2.new(0, 0, 0.85, 0)
+status.BackgroundTransparency = 1
+status.TextColor3 = Color3.fromRGB(100, 255, 100)
+status.Font = Enum.Font.SourceSans
+
+-- 📋 قائمة المنتجات المتاحة
+local productsList = Instance.new("TextLabel")
+productsList.Text = "Available: VIP, Premium, Golden Sword, etc."
+productsList.Size = UDim2.new(1, 0, 0.15, 0)
+productsList.Position = UDim2.new(0, 0, 1.05, 0)
+productsList.BackgroundTransparency = 1
+productsList.TextColor3 = Color3.fromRGB(150, 150, 200)
+productsList.TextXAlignment = Enum.TextXAlignment.Left
+productsList.FontSize = Enum.FontSize.Size12
+
+-- التجميع
+title.Parent = main
+productImage.Parent = main
+input.Parent = main
+button.Parent = main
+status.Parent = main
+productsList.Parent = main
+main.Parent = phoenixUI
+
+-- 🔥 حدث الشراء
+button.MouseButton1Click:Connect(function()
+    local productName = input.Text:gsub("^%s*(.-)%s*$", "%1") -- إزالة الفراغات
     
-    if not targetFolder then
-        print("❌ فشل في الوصول للمسار المطلوب")
+    if productName == "" then
+        status.Text = "❌ ENTER PRODUCT NAME"
+        status.TextColor3 = Color3.fromRGB(255, 50, 50)
+        task.wait(1.5)
+        status.Text = "🟢 READY"
+        status.TextColor3 = Color3.fromRGB(100, 255, 100)
         return
     end
     
-    print("✅ وصل إلى: " .. targetFolder:GetFullName())
-    print("   النوع: " .. targetFolder.ClassName)
-    print("   المحتويات: " .. #targetFolder:GetChildren() .. " عنصر")
+    button.Text = "🔄 PROCESSING..."
+    button.BackgroundColor3 = Color3.fromRGB(255, 150, 0)
+    status.Text = "🔍 Searching: " .. productName
+    status.TextColor3 = Color3.fromRGB(255, 200, 50)
     
-    -- 2. مسح عميق للمجلد
-    task.wait(1)
-    local tokens = deepScanTokenProducts(targetFolder)
-    
-    if #tokens == 0 then
-        print("❌ لم يتم العثور على Token/Tokens في هذا المسار")
-        print("   جاري البحث في المستويات الفرعية...")
+    task.spawn(function()
+        local result = Phoenix:igniteSmart(productName)
         
-        -- بحث أعمق
-        for _, child in pairs(targetFolder:GetDescendants()) do
-            if child.Name:find("Token") then
-                table.insert(tokens, {
-                    object = child,
-                    name = child.Name,
-                    type = child.ClassName,
-                    path = child:GetFullName(),
-                    original = child.Value
-                })
-            end
+        status.Text = result
+        if string.sub(result, 1, 1) == "✅" then
+            status.TextColor3 = Color3.fromRGB(0, 255, 100)
+        else
+            status.TextColor3 = Color3.fromRGB(255, 50, 50)
         end
         
-        if #tokens == 0 then
-            print("❌ لا توجد Token/Tokens في أي مستوى")
-            return
-        end
-    end
-    
-    print("\n✅ العثور على " .. #tokens .. " Token/Tokens:")
-    for i, token in ipairs(tokens) do
-        print("   " .. i .. ". " .. token.name .. " (" .. token.type .. ")")
-        print("      المسار: " .. token.path)
-        print("      القيمة: " .. tostring(token.original))
-    end
-    
-    -- 3. الحقن البطيء لكل Token
-    local results = {}
-    for i, token in ipairs(tokens) do
-        print("\n🎯 [" .. i .. "/" .. #tokens .. "] معالجة: " .. token.name)
-        print("   المسار: " .. token.path)
-        
-        -- استراحة طويلة بين العمليات
-        if i > 1 then
-            local waitTime = math.random(2, 4)
-            print("   ⏳ استراحة " .. waitTime .. " ثواني...")
-            task.wait(waitTime)
-        end
-        
-        -- الحقن فائق البطء
-        local result = ultraSlowInjection(token)
-        table.insert(results, result)
-        
-        print("   ✅ تم: " .. token.original .. " → " .. result.new)
-        print("   ⏱️  المدة: " .. string.format("%.2f", result.duration) .. " ثانية")
-        print("   📊 الخطوات: " .. result.steps)
-        
-        -- تسجيل في اللوغ
-        table.insert(injectionLog, {
-            target = token.path,
-            result = result
-        })
-    end
-    
-    -- 📊 التقرير النهائي
-    print("\n" .. string.rep("=", 50))
-    print("📈 تقرير الحقن الدقيق:")
-    print("   المسار المستهدف: " .. TARGET_PATH)
-    print("   Tokens معالجة: " .. #tokens)
-    print("   إجمالي الوقت: " .. string.format("%.1f", os.clock()) .. " ثانية")
-    
-    local successCount = 0
-    for _, r in ipairs(results) do
-        if r.success then successCount = successCount + 1 end
-    end
-    
-    print("   النجاح: " .. successCount .. "/" .. #tokens)
-    
-    -- 🛡️ تقييم الاكتشاف
-    task.wait(2)
-    print("\n🛡️ تقييم مخاطر الاكتشاف:")
-    
-    if #tokens <= 2 then
-        print("   ✅ مخاطر منخفضة: عدد قليل من التعديلات")
-        print("   ⏱️  الاكتشاف المحتمل: 30+ ثانية")
-    elseif StealthConfig.MODE == "ULTRA_SLOW" then
-        print("   🟡 مخاطر متوسطة: نمط بطيء جداً")
-        print("   ⏱️  الاكتشاف المحتمل: 20-30 ثانية")
-    else
-        print("   🔴 مخاطر عالية: تعديلات كثيرة")
-        print("   ⏱️  الاكتشاف المحتمل: 10-15 ثانية")
-    end
-    
-    return results
+        task.wait(3)
+        button.Text = "🛒 PURCHASE"
+        button.BackgroundColor3 = Color3.fromRGB(60, 30, 80)
+        status.Text = "🟢 READY - Enter product name"
+        status.TextColor3 = Color3.fromRGB(100, 255, 100)
+    end)
+end)
+
+phoenixUI.Parent = plr.PlayerGui
+
+-- 🚀 تصدير الوظائف
+_G.PhoenixSmart = Phoenix
+_G.SmartPurchase = function(productName)
+    return Phoenix:igniteSmart(productName)
 end
 
--- 📱 واجهة دقيقة للمسار المحدد
-local function createPrecisionMobileUI()
-    local ui = Instance.new("ScreenGui")
-    ui.Name = "TokenManager_Mobile"
-    ui.ResetOnSpawn = false
+-- 📢 الإعلان
+print([[
     
-    local main = Instance.new("Frame")
-    main.Size = UDim2.new(0.9, 0, 0.4, 0)
-    main.Position = UDim2.new(0.05, 0, 0.3, 0)
-    main.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
-    main.BackgroundTransparency = 0.1
+    ╔══════════════════════════════════╗
+    ║      🎯 PHOENIX SMART v2.0      ║
+    ║      TARGETED PURCHASE          ║
+    ║      MOBILE READY               ║
+    ╚══════════════════════════════════╝
     
-    -- معلومات المسار
-    local pathLabel = Instance.new("TextLabel")
-    pathLabel.Text = "🎯 Target: TokenProducts"
-    pathLabel.Size = UDim2.new(1, 0, 0.15, 0)
-    pathLabel.BackgroundColor3 = Color3.fromRGB(40, 30, 60)
-    pathLabel.TextColor3 = Color3.fromRGB(200, 180, 255)
-    pathLabel.Font = Enum.Font.SourceSansBold
+    🎯 SMART PURCHASE SYSTEM:
+    1. 🔍 Enter product name
+    2. 🎯 Targets specific purchase systems
+    3. 🐌 Stealth mode to avoid detection
     
-    local pathText = Instance.new("TextLabel")
-    pathText.Text = TARGET_PATH
-    pathText.Size = UDim2.new(1, 0, 0.15, 0)
-    pathText.Position = UDim2.new(0, 0, 0.15, 0)
-    pathText.BackgroundTransparency = 1
-    pathText.TextColor3 = Color3.fromRGB(150, 200, 255)
-    pathText.TextScaled = true
+    📱 USAGE:
+    • Type product name (e.g., "VIP Pass")
+    • Press PURCHASE button
+    • Or: _G.SmartPurchase("Product Name")
     
-    -- أزرار التحكم
-    local scanBtn = Instance.new("TextButton")
-    scanBtn.Text = "🔍 SCAN PATH"
-    scanBtn.Size = UDim2.new(0.8, 0, 0.2, 0)
-    scanBtn.Position = UDim2.new(0.1, 0, 0.35, 0)
-    scanBtn.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
-    scanBtn.TextColor3 = Color3.new(1, 1, 1)
+    📦 AVAILABLE PRODUCTS:
+    • VIP / VIP Pass / Premium
+    • Golden Sword / Rainbow Wings
+    • Speed Boost / Super Jump
+    • Infinite Coins / God Mode
     
-    local injectBtn = Instance.new("TextButton")
-    injectBtn.Text = "🐌 ULTRA SLOW INJECT"
-    injectBtn.Size = UDim2.new(0.8, 0, 0.2, 0)
-    injectBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
-    injectBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
-    injectBtn.TextColor3 = Color3.new(1, 1, 1)
+    ⚠️ IMPORTANT:
+    • Works on mobile via loadstring
+    • Update PRODUCT_DATABASE with real IDs
+    • For security testing only
     
-    -- نتائج
-    local resultsBox = Instance.new("TextBox")
-    resultsBox.Size = UDim2.new(0.9, 0, 0.2, 0)
-    resultsBox.Position = UDim2.new(0.05, 0, 0.82, 0)
-    resultsBox.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    resultsBox.TextColor3 = Color3.new(1, 1, 1)
-    resultsBox.Text = "Status: Ready"
-    resultsBox.MultiLine = true
-    resultsBox.TextEditable = false
-    
-    -- أحداث الأزرار
-    scanBtn.MouseButton1Click:Connect(function()
-        scanBtn.Text = "SCANNING..."
-        resultsBox.Text = "Scanning target path...\n"
-        
-        task.spawn(function()
-            local targetFolder = navigateToPath(TARGET_PATH)
-            if targetFolder then
-                local tokens = deepScanTokenProducts(targetFolder)
-                resultsBox.Text = resultsBox.Text .. "Found: " .. #tokens .. " tokens\n"
-                for _, t in ipairs(tokens) do
-                    resultsBox.Text = resultsBox.Text .. "• " .. t.name .. "\n"
-                end
-            else
-                resultsBox.Text = "❌ Path not found"
-            end
-            
-            scanBtn.Text = "🔍 SCAN PATH"
-        end)
-    end)
-    
-    injectBtn.MouseButton1Click:Connect(function()
-        injectBtn.Text = "INJECTING..."
-        resultsBox.Text = "🚀 Starting ultra slow injection...\n"
-        
-        task.spawn(function()
-            local results = executePrecisionInjection()
-            
-            if results then
-                resultsBox.Text = resultsBox.Text .. "✅ Injection complete!\n"
-                resultsBox.Text = resultsBox.Text .. "Modified: " .. #results .. " tokens\n"
-                resultsBox.Text = resultsBox.Text .. "Value: " .. TARGET_VALUE
-            else
-                resultsBox.Text = resultsBox.Text .. "❌ Injection failed"
-            end
-            
-            injectBtn.Text = "🐌 ULTRA SLOW INJECT"
-        end)
-    end)
-    
-    -- التجميع
-    pathLabel.Parent = main
-    pathText.Parent = main
-    scanBtn.Parent = main
-    injectBtn.Parent = main
-    resultsBox.Parent = main
-    main.Parent = ui
-    
-    return ui
-end
-
--- 🚀 التشغيل التلقائي
-task.wait(2)  -- تأخير بدء
-local precisionUI = createPrecisionMobileUI()
-precisionUI.Parent = plr:WaitForChild("PlayerGui")
-
-print("\n🎯 تم تحميل أداة المسار المحدد")
-print("   المسار: " .. TARGET_PATH)
-print("   اضغط SCAN PATH أولاً للتأكد")
-print("   ثم ULTRA SLOW INJECT للحقن")
+]])
